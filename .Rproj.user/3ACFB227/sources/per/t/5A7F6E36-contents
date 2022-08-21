@@ -1,0 +1,91 @@
+
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(moments)
+library(corrplot)
+
+# Report libraries
+library(knitr)
+library(kable)
+library(kable_extra)
+library(rmarkdown)
+
+
+## Load data
+df <- foreign::read.spss(
+  "data/data1.sav", use.value.labels = FALSE, to.data.frame = TRUE
+)
+
+
+
+
+# Explore Univariate distributions ####
+
+# Although data is ordinal and thus non-normal by definition, we check for
+# normality assumption. We will apply z rescaling to see how they approximate to 
+# mean 0 and sd 1. Will also check histograms and kurtosis and skewnewss. We 
+# reject applying saphiro test, as being only 5 poitn scale ordinal is unlikely will
+# provide any meaningfull result
+
+
+# Z-tranform
+df_z <- sapply(
+  df, function(x) (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE)
+) %>% as.data.frame()
+
+# Check histogram
+df_z_long <- df_z %>% 
+  tidyr::pivot_longer(dplyr::everything(), names_to = "variable")
+
+p_hist <- ggplot2::ggplot(df_z_long, ggplot2::aes(value)) + 
+  ggplot2::geom_histogram(bins = 5) +
+  ggplot2::geom_vline(
+    ggplot2::aes(xintercept = mean(value, na.rm = TRUE)),
+    color = "red", linetype = "dashed", size = 0.75
+  ) +
+  ggplot2::theme_bw() + 
+  ggplot2::facet_wrap(~ variable, ncol = 5)
+
+# Compute descriptive stats to check for normality
+norm_stats <- df_z %>%
+  dplyr::summarise(dplyr::across(
+    dplyr::everything(), 
+    list(
+      skewness = ~ round(moments::skewness(., na.rm = TRUE), 3),
+      kurtosis = ~ round(moments::kurtosis(., na.rm = TRUE), 3)
+    )
+  )) %>%
+  tidyr::pivot_longer(
+    dplyr::everything(), names_to = c("variable", ".value"), names_sep = "_"
+  )
+
+# Check best performing vars
+check_norm_stats <- norm_stats %>%
+  dplyr::mutate(
+    skewness_check = skewness > -0.15 & skewness < 0.15,
+    kurtosis_check = kurtosis < quantile(kurtosis, na.rm = T)[[2]]
+)
+
+
+# Explore bivariate distributions ####
+
+# Two assumed normally distributed
+ggplot2::ggplot(df_z, ggplot2::aes(v1, v2)) +
+  ggplot2::geom_point() +
+  ggplot2::geom_smooth(method = "lm")
+
+
+
+# Explore bivariate distributions ####
+
+# Correlation Structure
+df_cor <- cor(df, use = "complete.obs")
+p_cor <- corrplot::corrplot(df_cor, method = 'number',  type = "lower")
+
+
+
+
+rmarkdown::render("R/report_script.rmd")
+

@@ -1,0 +1,103 @@
+---
+title: "Structural Equation Modeling"
+author: "Julian Ibarguen"
+date: "25/08/2022"
+header-includes:
+- \usepackage{booktabs}
+- \usepackage{makecell}
+- \usepackage{colortbl}
+- \usepackage{wrapfig}
+- \usepackage{subfig}
+- \usepackage{lscape}
+- \usepackage{natbib}
+- \newcommand{\blandscape}{\begin{landscape}}
+- \newcommand{\elandscape}{\end{landscape}}
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    fig_caption: true
+    extra_dependencies: "subfig"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+## Introduction
+
+We aim to fit a Structural Equation Model (SEM) following the exercise proposed by Petri Nokelainen from the Research Centre for Vocational Education, University of Tampere, Finland. Data and documentation for this exercise can be found [\textcolor{blue}{here}](https://www.scribd.com/document/222003310/Sem-Exercise-v2-5).
+
+We used the proposed data set with `r nrow(df)` rows and `r ncol(df)` columns. The respondents in both samples are staff members of Finnish polytechnic institute for higher education. The original measurement instrument (Growth-oriented Atmosphere Questionnaire, GOAQ) has 13 factors and 92-items (Ruohotie, 1996; Ruohotie, Nokelainen & Tirri, 2002), but for the purposes of this exercise Nokelainen selected 13 factors and 27 items, all consisting of a five–point Likert scale from 1 (totally disagree) to 5 (totally agree) was applied (Nokelainen, n.d.)
+
+## Evaluation of assumptions
+
+### Univariate distribution
+
+Although data is ordinal, thus non-normal in nature, we check for normality assumption. We will apply z re-scaling to see how they approximate to mean 0. Will also check kurtosis and skewnewss, and plot the histograms. We reject applying Saphiro test or other normality test, as being only 5 points scale ordinal is unlikely will provide any meaningful result.
+
+Given a normally distribute variable would have a skewness of 0 and kurtosis of 3. For this purpose we calculated a synthetic measure for skewness and kurtosis as the average between the skewness and excess kurtosis ($kurtosis - 3$). Under this synthetic measure, a perfect normal distribution would have a value of 0. For our purpose, we select those variables whose deviance from the normal distribution is lower than 0.4, according to the synthetic measure create. The selected variables were further confirmed with the histogram.
+
+
+Observing table 1 and figure 1, we assumed normality for the following variables: `r paste(norm_stats[norm_stats$avg_skew_kurt < 0.4, "variable"][[1]], collapse = ", ")`. The remaining variables were assumed non-normally distributed
+
+
+```{r norm_descr}
+
+align.c <- rep("c", ncol(norm_stats) - 1)
+
+norm_stats %>%
+  dplyr::arrange(avg_skew_kurt) %>%
+  kableExtra::kbl(
+    format = "latex", booktabs = TRUE,
+    align = c("l", align.c), digits = 3,
+    caption = "Descriptive statistics to assess approximation to normal distribution"
+  ) %>%
+    kableExtra::kable_styling(latex_options = c("hold_position", "striped")) %>%
+    kableExtra::row_spec(0, bold = TRUE) %>%
+    kableExtra::column_spec(0, bold = TRUE)
+```
+
+
+```{r histogram, fig.dim = c(11,15), fig.cap = "Histograms"}
+p_hist
+```
+
+
+
+### Bivariate distribution
+
+Based on the univariate analysis, we select three different variable combinations: 1) both are assumed normally distributed; 2) one is assumed normally distributed, but the other one no; 3) neither fo them is assumed normally distributed. 
+
+In figure 2, we can observe the linear relationship between the 3 different combination. When we assume normality in both variables, we observe linear relationship, which decreases for the second combination (one variable assumed normal and the other no), and the relationship disappear for the third combination
+
+```{r bivariates, fig.show = "hold", fig.ncol = 2, fig.align = 'center', out.width = "50%", fig.cap = "Bivariate distributions", fig.subcap = c("Two variables assumed normally distributed", "One variable assumed normally distributed", "No variable assumed normally distributed")}
+p_norm2
+p_norm1
+p_norm0
+```
+
+
+### Correlation matrix
+
+We observe now the correlation matrix between all `r ncol(df)` variables. For SEM and other factorial type of analysis, the correlation coefficient should be between $\pm 0.3$ and $\pm 0.8$. Too low correlations indicate weak inter-item dependency, too high correlations might indicate multicollinearity (Nokelainen, n.d.). 
+
+The highest correlation coefficient ($r$) in absolute terms was betwee `r max_r_vars` with $r = $`r max_r` and $R^2$ = `r `max_r2`. The lowest correlation coefficient ($r$) was between `r min_r_vars` with $r = $`r min_r` and $R^2$ = `r `min_r2`. Therefore, we cna conlcude that our variables are suitable for a SEM model
+
+
+```{r cor_plot, fig.dim = c(15, 15), fig.cap = "Correlation matrix"}
+corrplot.mixed(
+  cor(df, use = "complete.obs"), 
+  lower = 'number', upper = 'square', 
+  tl.cex = 1.25, number.cex = 1, number.digits = 2
+)
+```
+
+
+## Path analysis
+
+To perform the path analysis we make use of the 13 factors available in our data.
+
+
+

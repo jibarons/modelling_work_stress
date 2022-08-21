@@ -1,0 +1,78 @@
+---
+title: "Structural Equation Modeling"
+author: "Julian Ibarguen"
+date: "25/08/2022"
+header-includes:
+- \usepackage{booktabs}
+- \usepackage{makecell}
+- \usepackage{colortbl}
+- \usepackage{wrapfig}
+- \usepackage{subfig}
+- \usepackage{lscape}
+- \usepackage{natbib}
+- \newcommand{\blandscape}{\begin{landscape}}
+- \newcommand{\elandscape}{\end{landscape}}
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    fig_caption: true
+    extra_dependencies: "subfig"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+We aim to fit a Structural Equation Model following the exercise proposed by Petri Nokelainen from the Research Centre for Vocational Education, University of Tampere, Finland. Data and documentation for this exercise can be found [\textcolor{blue}{here}](https://www.scribd.com/document/222003310/Sem-Exercise-v2-5)
+
+## Evaluating assumptions
+
+### Exploring univariate distribution
+
+Although data is ordinal, thus non-normal in nature, we check for normality assumption. We will apply z re-scaling to see how they approximate to mean 0. Will also check kurtosis and skewnewss, and plot the histograms. We reject applying Saphiro test or other normality test, as being only 5 points scale ordinal is unlikely will provide any meaningful result.
+
+We will assume the variable to be normally distributed when the skewness is between -0.1 and 0.1 and when the variable have a kurtosis within the lowest 25% (Q1)
+
+By observing the table with the descriptive statistics and the skewness and kurtosis check, we can assume normality for the following variables: `r paste(as.data.frame(check_norm_stats)[check_norm_stats$skewness_check  & check_norm_stats$kurtosis_check, "variable"], collapse = ", ")`. The remaining variables are assumed non-normally distributed
+
+
+```{r histogram, fig.cap = "Histograms"}
+p_hist
+```
+
+
+
+
+
+
+### Exploring bivariate distribution
+
+
+Based on the univariate analysis, we select three different variable combinations: 1) both are assumed normally distributed; 2) one is assumed normally distributed, but the other one no; 3) neither fo them is assumed normally distributed.
+
+
+```{r norm_descr}
+
+align.c <- rep("c", ncol(norm_stats) - 1)
+kableExtra::kbl(
+  norm_stats, format = "latex", booktabs = TRUE,
+  align = c("l", align.c), digits = 3,
+  caption = "Pearson correlation coeficients between sector needs and IDP displacement"
+) %>%
+  kableExtra::kable_styling(latex_options = c("hold_position", "striped")) %>%
+  kableExtra::row_spec(0, bold = TRUE) %>%
+  kableExtra::column_spec(0, bold = TRUE)
+
+```
+
+
+
+### Exploring the correlation matrix
+
+```{r cor_plot}
+p_cor
+```
+
+

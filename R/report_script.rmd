@@ -23,6 +23,23 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+
+format_tbl <- function(.data, caption = "Table") {
+  
+  align.c <- rep("c", ncol(.data) - 1)
+  
+  kableExtra::kbl(
+    .data, format = "latex", booktabs = TRUE,
+    align = c("l", align.c), digits = 3,
+    caption = caption
+  ) %>%
+    kableExtra::kable_styling(latex_options = c("hold_position", "striped")) %>%
+    kableExtra::row_spec(0, bold = TRUE) %>%
+    kableExtra::column_spec(0, bold = TRUE)
+
+}
+
 ```
 
 ## Introduction
@@ -44,27 +61,13 @@ Observing table 1 and figure 1, we assumed normality for the following variables
 
 
 ```{r norm_descr}
-
-align.c <- rep("c", ncol(norm_stats) - 1)
-
-norm_stats %>%
-  dplyr::arrange(avg_skew_kurt) %>%
-  kableExtra::kbl(
-    format = "latex", booktabs = TRUE,
-    align = c("l", align.c), digits = 3,
-    caption = "Descriptive statistics to assess approximation to normal distribution"
-  ) %>%
-    kableExtra::kable_styling(latex_options = c("hold_position", "striped")) %>%
-    kableExtra::row_spec(0, bold = TRUE) %>%
-    kableExtra::column_spec(0, bold = TRUE)
+format_tbl(norm_stats, "Descriptive statistics to assess approximation to normal distribution")
 ```
 
 
 ```{r histogram, fig.dim = c(11,15), fig.cap = "Histograms"}
 p_hist
 ```
-
-
 
 ### Bivariate distribution
 
@@ -97,7 +100,59 @@ corrplot.mixed(
 
 ## Path analysis
 
-To perform the path analysis we make use of the 13 factors available in our data.
+To perform the path analysis we make use of the 13 factors available in our data and we fit the following model:
+
+```{r path_plot, out.width = "60%", fig.cap = "Model path", fig.align = 'center'}
+p_path
+```
+
+where:
+
+```{r var_names}
+var_dict <- as_tibble(as.list(var_labs)) %>% 
+  tidyr::pivot_longer(1:length(var_labs), names_to = "variable_name", values_to = "variable_label")
+
+# var_dict[var_dict$variable_name %in% names(p_path$Arguments$labels) , "model_acronym"] <- p_path$Arguments$labels
+# var_dict[is.na(var_dict$model_acronym),"model_acronym"] <- ""
+
+var_dict <- dplyr::relocate(var_dict, variable_label, .before = 1)
+
+format_tbl(var_dict, "Labels for factor variables")
+
+```
+
+Tghe summary of the model was the following:
+
+```{r summary_fit}
+fit_summary
+
+```
+
+```{r calculate}
+r2 <- fit_pe[which(fit_pe$op == "r2"), "est"]
+
+fit_pe_reg <- dplyr::arrange(fit_pe[fit_pe$op == "~", ], dplyr::desc(est))
+
+
+r_1_var <- var_labs[names(var_labs) %in% fit_pe_reg[1, "rhs"]]
+
+
+```
+
+From the results of the model we obtain the following conclusions:
+
+* How much dependent variable variance the four independent variables predict? $R^2 = `r round(r2,3)`$ .
+
+* Order the IVs in the following rows (best predictor comes first):
+  1. The first (strongest) predictor for Valuation of the work is _`r var_labs[names(var_labs) %in% fit_pe_reg[1, "rhs"]]`_ $r = `r round(fit_pe_reg[1, "est"], 3)`$
+  2. The second predictor for Valuation of the work is _`r var_labs[names(var_labs) %in% fit_pe_reg[2, "rhs"]]`_ $r = `r round(fit_pe_reg[2, "est"], 3)`$
+  3. The third predictor for Valuation of the work is _`r var_labs[names(var_labs) %in% fit_pe_reg[3, "rhs"]]`_ $r = `r round(fit_pe_reg[3, "est"], 3)`$
+  4. The fourth predictor for Valuation of the work is _`r var_labs[names(var_labs) %in% fit_pe_reg[4, "rhs"]]`_ $r = `r round(fit_pe_reg[4, "est"], 3)`$
+
+* Select Unstandardized estimates and complete the following sentences:
+  * When _Encouraging leadership_ goes up by 1, Valuation of the work goes up / down by ____.
+  * When _Know-how rewarding_ goes up by 1, Valuation of the work goes up / down by ____.
+
 
 
 

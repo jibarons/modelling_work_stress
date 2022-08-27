@@ -5,8 +5,8 @@ library(tidyr)
 library(ggplot2)
 library(moments)
 library(corrplot)
-library(lavaab)
-
+library(lavaan)
+library(tidySEM)
 # Report libraries
 library(knitr)
 library(kableExtra)
@@ -128,25 +128,69 @@ corrplot.mixed(
 df_f <- foreign::read.spss(
   "data/data1factors.sav", use.value.labels = FALSE, to.data.frame = TRUE,
 )
-attributes(df_f)$variable.labels
+var_labs <- attributes(df_f)$variable.labels
 
 # Model definition
-model <- 'ta_val7 ~ kj_enc1 + op_rew3 + tk_inv5 + ts_cla6'
+model <- ' 
+  # regressions
+  ta_val7 ~ kj_enc1 + op_rew3 + tk_inv5 + ts_cla6
+ 
+  # intercepts
+  ta_val7 ~ 1
+'
+
 # Fit
-fit <- lavaan::sem(model, data = df_f)
-# summary measures
-lavaan::summary(fit, standardized = FALSE, rsquare = TRUE) # lavaan Rsquare = Square Multiple Correlation (https://paolotoffanin.wordpress.com/2018/06/30/beginning-with-sem-in-lavaan-iii/)
-
-lavaan::parameterestimates(fit, standardized = TRUE)
-
-
-tidySEM::graph_sem(model = fit)
-lavaanPlot::lavaanPlot(model = fit, coefs = TRUE)
-semPlot::semPaths(
-  fit, what = "std", 
-  residuals = FALSE, intercepts = FALSE, 
-  style = "ram"
+fit <- lavaan::sem(
+  model, data = df_f, estimator = "ML"
+  
 )
+
+# summary measures
+fit_summary <- lavaan::summary(fit, standardized = TRUE, rsquare = TRUE) # lavaan Rsquare = Square Multiple Correlation (https://paolotoffanin.wordpress.com/2018/06/30/beginning-with-sem-in-lavaan-iii/)
+fit_pe <- fit_summary$pe # parameters estimated
+
+  
+tidy_fit <- fit %>%
+  tidySEM::get_edges() %>%
+  dplyr::mutate( # remove labels to create path model
+    label = NULL,
+    show = dplyr::if_else(from == to, FALSE, TRUE),
+    curvature = dplyr::if_else(curvature == 60, 80, curvature),
+    label_size = 40
+  ) 
+  
+  
+
+p_path <- tidySEM::graph_sem(
+  tidy_fit, 
+  layout = tidySEM::get_layout(
+    "kj_enc1", "",
+    "op_rew3", "",
+    ""       , "ta_val7",
+    "tk_inv5", "",
+    "ts_cla6", "",
+    rows = 5),
+  # spacing_x = 1.5,# default 1
+  # spacing_y = 1.5, # default 1,
+  text_size = 5.5, # default 4
+  angle = 0
+) +
+  ggplot2::ggtitle("ta_val7 ~ kj_enc1 + op_rew3 + tk_inv5 + ts_cla6") +
+  ggplot2::theme(
+    plot.title = ggplot2::element_text(hjust = 0.5, face = "italic")
+  )
+
+
+
+
+# p_path <- semPlot::semPaths(
+#   fit, what = "est", #whatLabels = "est",
+#   residuals = TRUE, intercepts = TRUE, 
+#   style = "ram", layout = "tree2",
+#   curvature = 3, rotation = 2, #levels = c(0.1,0.05),
+#   nCharNodes = 0,
+#   edge.color = "black", nDigits = 2,
+# )
 
 
 

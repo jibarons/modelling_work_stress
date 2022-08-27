@@ -31,23 +31,29 @@ vignettes/*.pdf
 *_cache/
 /cache/
 
-# Other files
-*.xls
-*.xlsx
-*.csv
-*.pdf
-*.html
-*.doc
-*.docx
-*.log
-
-# Other folders
-outputs/
-data/
-
-# Temporary files created by R markdown
+# Temporary files created by R markdown and other files
 *.utf8.md
 *.knit.md
+*.html
+*.pdf
+*.xlsx*
+*.docx*
+*.txt
+*.log
+*.csv
 
 # R Environment Variables
 .Renviron
+
+# R Project outputs 
+/output_ddbb/*
+/output_plots/*
+/output_tables/*
+/hnap_platform/*
+/data-raw/*
+/data/*
+/key_findings/*
+
+# Packrat
+packrat/lib*/
+packrat/src/

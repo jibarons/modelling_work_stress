@@ -39,6 +39,7 @@ vignettes/*.pdf
 *.html
 *.doc
 *.docx
+*.log
 
 # Other folders
 outputs/

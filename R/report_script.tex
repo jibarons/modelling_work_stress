@@ -1,0 +1,448 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Structural Equation Modeling},
+  pdfauthor={Julian Ibarguen},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+\usepackage{booktabs}
+\usepackage{makecell}
+\usepackage{colortbl}
+\usepackage{wrapfig}
+\usepackage{subfig}
+\usepackage{lscape}
+\usepackage{natbib}
+\newcommand{\blandscape}{\begin{landscape}}
+\newcommand{\elandscape}{\end{landscape}}
+\usepackage{subfig}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\title{Structural Equation Modeling}
+\author{Julian Ibarguen}
+\date{25/08/2022}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
+\hypertarget{introduction}{%
+\subsection{Introduction}\label{introduction}}
+
+We aim to fit a Structural Equation Model (SEM) following the exercise
+proposed by Petri Nokelainen from the Research Centre for Vocational
+Education, University of Tampere, Finland. Data and documentation for
+this exercise can be found
+\href{https://www.scribd.com/document/222003310/Sem-Exercise-v2-5}{\textcolor{blue}{here}}.
+
+We used the proposed data set with 447 rows and 27 columns. The
+respondents in both samples are staff members of Finnish polytechnic
+institute for higher education. The original measurement instrument
+(Growth-oriented Atmosphere Questionnaire, GOAQ) has 13 factors and
+92-items (Ruohotie, 1996; Ruohotie, Nokelainen \& Tirri, 2002), but for
+the purposes of this exercise Nokelainen selected 13 factors and 27
+items, all consisting of a five--point Likert scale from 1 (totally
+disagree) to 5 (totally agree) was applied (Nokelainen, n.d.)
+
+\hypertarget{evaluation-of-assumptions}{%
+\subsection{Evaluation of assumptions}\label{evaluation-of-assumptions}}
+
+\hypertarget{univariate-distribution}{%
+\subsubsection{Univariate distribution}\label{univariate-distribution}}
+
+Although data is ordinal, thus non-normal in nature, we check for
+normality assumption. We will apply z re-scaling to see how they
+approximate to mean 0. Will also check kurtosis and skewnewss, and plot
+the histograms. We reject applying Saphiro test or other normality test,
+as being only 5 points scale ordinal is unlikely will provide any
+meaningful result.
+
+Given a normally distribute variable would have a skewness of 0 and
+kurtosis of 3. For this purpose we calculated a synthetic measure for
+skewness and kurtosis as the average between the skewness and excess
+kurtosis (\(kurtosis - 3\)). Under this synthetic measure, a perfect
+normal distribution would have a value of 0. For our purpose, we select
+those variables whose deviance from the normal distribution is lower
+than 0.4, according to the synthetic measure create. The selected
+variables were further confirmed with the histogram.
+
+Observing table 1 and figure 1, we assumed normality for the following
+variables: v2, v3, v4, v15, v31, v33. The remaining variables were
+assumed non-normally distributed
+
+\begin{table}[!h]
+
+\caption{\label{tab:norm_descr}Descriptive statistics to assess approximation to normal distribution}
+\centering
+\begin{tabular}[t]{lcccc}
+\toprule
+\textbf{variable} & \textbf{skewness} & \textbf{kurtosis} & \textbf{kurtosis\_excess} & \textbf{avg\_skew\_kurt}\\
+\midrule
+\cellcolor{gray!6}{v1} & \cellcolor{gray!6}{-0.072} & \cellcolor{gray!6}{2.239} & \cellcolor{gray!6}{-0.761} & \cellcolor{gray!6}{0.417}\\
+v2 & 0.082 & 2.350 & -0.650 & 0.366\\
+\cellcolor{gray!6}{v3} & \cellcolor{gray!6}{-0.014} & \cellcolor{gray!6}{2.318} & \cellcolor{gray!6}{-0.682} & \cellcolor{gray!6}{0.348}\\
+v4 & -0.203 & 2.592 & -0.408 & 0.306\\
+\cellcolor{gray!6}{v5} & \cellcolor{gray!6}{-0.812} & \cellcolor{gray!6}{2.698} & \cellcolor{gray!6}{-0.302} & \cellcolor{gray!6}{0.557}\\
+\addlinespace
+v6 & -0.743 & 2.521 & -0.479 & 0.611\\
+\cellcolor{gray!6}{v7} & \cellcolor{gray!6}{-0.496} & \cellcolor{gray!6}{2.600} & \cellcolor{gray!6}{-0.400} & \cellcolor{gray!6}{0.448}\\
+v8 & -0.419 & 2.368 & -0.632 & 0.526\\
+\cellcolor{gray!6}{v9} & \cellcolor{gray!6}{-0.382} & \cellcolor{gray!6}{2.454} & \cellcolor{gray!6}{-0.546} & \cellcolor{gray!6}{0.464}\\
+v12 & 0.607 & 2.431 & -0.569 & 0.588\\
+\addlinespace
+\cellcolor{gray!6}{v13} & \cellcolor{gray!6}{0.555} & \cellcolor{gray!6}{2.531} & \cellcolor{gray!6}{-0.469} & \cellcolor{gray!6}{0.512}\\
+v14 & -0.271 & 2.333 & -0.667 & 0.469\\
+\cellcolor{gray!6}{v15} & \cellcolor{gray!6}{0.022} & \cellcolor{gray!6}{2.291} & \cellcolor{gray!6}{-0.709} & \cellcolor{gray!6}{0.366}\\
+v16 & -0.578 & 2.295 & -0.705 & 0.641\\
+\cellcolor{gray!6}{v17} & \cellcolor{gray!6}{-0.372} & \cellcolor{gray!6}{2.243} & \cellcolor{gray!6}{-0.757} & \cellcolor{gray!6}{0.565}\\
+\addlinespace
+v18 & -0.164 & 1.980 & -1.020 & 0.592\\
+\cellcolor{gray!6}{v29} & \cellcolor{gray!6}{0.042} & \cellcolor{gray!6}{2.084} & \cellcolor{gray!6}{-0.916} & \cellcolor{gray!6}{0.479}\\
+v30 & -0.107 & 2.141 & -0.859 & 0.483\\
+\cellcolor{gray!6}{v31} & \cellcolor{gray!6}{-0.198} & \cellcolor{gray!6}{2.447} & \cellcolor{gray!6}{-0.553} & \cellcolor{gray!6}{0.375}\\
+v33 & -0.610 & 2.876 & -0.124 & 0.367\\
+\addlinespace
+\cellcolor{gray!6}{v34} & \cellcolor{gray!6}{-0.806} & \cellcolor{gray!6}{3.277} & \cellcolor{gray!6}{0.277} & \cellcolor{gray!6}{0.542}\\
+v42r & -0.026 & 2.137 & -0.863 & 0.444\\
+\cellcolor{gray!6}{v43} & \cellcolor{gray!6}{-0.716} & \cellcolor{gray!6}{2.875} & \cellcolor{gray!6}{-0.125} & \cellcolor{gray!6}{0.420}\\
+v44 & -0.341 & 2.133 & -0.867 & 0.604\\
+\cellcolor{gray!6}{v45} & \cellcolor{gray!6}{0.522} & \cellcolor{gray!6}{2.299} & \cellcolor{gray!6}{-0.701} & \cellcolor{gray!6}{0.612}\\
+\addlinespace
+v46 & 0.558 & 2.384 & -0.616 & 0.587\\
+\cellcolor{gray!6}{v47} & \cellcolor{gray!6}{0.596} & \cellcolor{gray!6}{2.271} & \cellcolor{gray!6}{-0.729} & \cellcolor{gray!6}{0.663}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}
+\centering
+\includegraphics{report_script_files/figure-latex/histogram-1.pdf}
+\caption{Histograms}
+\end{figure}
+
+\hypertarget{bivariate-distribution}{%
+\subsubsection{Bivariate distribution}\label{bivariate-distribution}}
+
+Based on the univariate analysis, we select three different variable
+combinations: 1) both are assumed normally distributed; 2) one is
+assumed normally distributed, but the other one no; 3) neither fo them
+is assumed normally distributed.
+
+In figure 2, we can observe the linear relationship between the 3
+different combination. When we assume normality in both variables, we
+observe linear relationship, which decreases for the second combination
+(one variable assumed normal and the other no), and the relationship
+disappear for the third combination
+
+\begin{figure}
+
+{\centering \subfloat[Two variables assumed normally distributed\label{fig:bivariates-1}]{\includegraphics[width=0.5\linewidth]{report_script_files/figure-latex/bivariates-1} }\subfloat[One variable assumed normally distributed\label{fig:bivariates-2}]{\includegraphics[width=0.5\linewidth]{report_script_files/figure-latex/bivariates-2} }\newline\subfloat[No variable assumed normally distributed\label{fig:bivariates-3}]{\includegraphics[width=0.5\linewidth]{report_script_files/figure-latex/bivariates-3} }
+
+}
+
+\caption{Bivariate distributions}\label{fig:bivariates}
+\end{figure}
+
+\hypertarget{correlation-matrix}{%
+\subsubsection{Correlation matrix}\label{correlation-matrix}}
+
+We observe now the correlation matrix between all 27 variables. For SEM
+and other factorial type of analysis, the correlation coefficient should
+be between \(\pm 0.3\) and \(\pm 0.8\). Too low correlations indicate
+weak inter-item dependency, too high correlations might indicate
+multicollinearity (Nokelainen, n.d.).
+
+The highest correlation coefficient (\(r\)) in absolute terms was betwee
+v18, v17 with \$r = \$0.8344792 and \(R^2\) =
+\texttt{r}max\_r2\texttt{.\ The\ lowest\ correlation\ coefficient\ (\$r\$)\ was\ between\ v45,\ v7\ with\ \$r\ =\ \$-0.3372552\ and\ \$R\^{}2\$\ =}r
+\texttt{min\_r2}. Therefore, we cna conlcude that our variables are
+suitable for a SEM model
+
+\begin{figure}
+\centering
+\includegraphics{report_script_files/figure-latex/cor_plot-1.pdf}
+\caption{Correlation matrix}
+\end{figure}
+
+\hypertarget{path-analysis}{%
+\subsection{Path analysis}\label{path-analysis}}
+
+\hypertarget{model-1}{%
+\subsubsection{Model 1}\label{model-1}}
+
+To perform the path analysis we make use of the 13 factors available in
+our data. The data consists of the thirteen growth-oriented atmosphere
+factors. The sample is the same as in data1, 447 staff members of
+Finnish polytechnic institute for higher education. The sample was
+collected in 2000.
+
+Over this data we are interested on knwoing the determinant for
+\emph{Valuation of the work}. We fit the following model:
+
+\[ta\_val7 = \beta_0 + \beta_1 kj\_enc1 + \beta_2 op\_rew3 + \beta_3 tk\_inv5 + \beta_4ts\_cla + \varepsilon_{ta\_val7}\]
+
+where:
+
+\begin{table}[!h]
+
+\caption{\label{tab:var_names}Labels for factor variables}
+\centering
+\begin{tabular}[t]{lc}
+\toprule
+\textbf{variable\_label} & \textbf{variable\_name}\\
+\midrule
+\cellcolor{gray!6}{1. Encouraging leadership} & \cellcolor{gray!6}{kj\_enc1}\\
+2. Strategic leadership & sj\_str2\\
+\cellcolor{gray!6}{3. Know-how rewarding} & \cellcolor{gray!6}{op\_rew3}\\
+4. Know-how developing & ok\_dev4\\
+\cellcolor{gray!6}{5. Incentive value of the work} & \cellcolor{gray!6}{tk\_inv5}\\
+\addlinespace
+6. Clarity of the work & ts\_cla6\\
+\cellcolor{gray!6}{7. Valuation of the work} & \cellcolor{gray!6}{ta\_val7}\\
+8. Relationship-based learning & vk\_rel8\\
+\cellcolor{gray!6}{9. Team spirit} & \cellcolor{gray!6}{rh\_tes9}\\
+11. Psychical stress of the work & tr\_psy11\\
+\addlinespace
+\cellcolor{gray!6}{12. Build-up of work requirements} & \cellcolor{gray!6}{tv\_bui12}\\
+13. Commitment to work and organization & si\_com13\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The summary of the model was the following:
+
+\begin{verbatim}
+## lavaan 0.6-12 ended normally after 16 iterations
+## 
+##   Estimator                                         ML
+##   Optimization method                           NLMINB
+##   Number of model parameters                         6
+## 
+##                                                   Used       Total
+##   Number of observations                           443         447
+## 
+## Model Test User Model:
+##                                                       
+##   Test statistic                                 0.000
+##   Degrees of freedom                                 0
+## 
+## Parameter Estimates:
+## 
+##   Standard errors                             Standard
+##   Information                                 Expected
+##   Information saturated (h1) model          Structured
+## 
+## Regressions:
+##                    Estimate  Std.Err  z-value  P(>|z|)   Std.lv  Std.all
+##   ta_val7 ~                                                             
+##     kj_enc1           0.381    0.047    8.086    0.000    0.381    0.446
+##     op_rew3           0.087    0.042    2.056    0.040    0.087    0.092
+##     tk_inv5           0.228    0.040    5.697    0.000    0.228    0.221
+##     ts_cla6           0.080    0.043    1.864    0.062    0.080    0.092
+## 
+## Intercepts:
+##                    Estimate  Std.Err  z-value  P(>|z|)   Std.lv  Std.all
+##    .ta_val7           0.959    0.140    6.842    0.000    0.959    1.093
+## 
+## Variances:
+##                    Estimate  Std.Err  z-value  P(>|z|)   Std.lv  Std.all
+##    .ta_val7           0.365    0.025   14.883    0.000    0.365    0.473
+## 
+## R-Square:
+##                    Estimate
+##     ta_val7           0.527
+\end{verbatim}
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.6\linewidth]{report_script_files/figure-latex/path_plot-1} 
+
+}
+
+\caption{Model path}\label{fig:path_plot}
+\end{figure}
+
+From the results of the model we obtain the following conclusions:
+
+\begin{itemize}
+\item
+  How much dependent variable variance the four independent variables
+  predict? \(R^2 = 0.527\) .
+\item
+  Order the IVs in the following rows (best predictor comes first):
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    The first (strongest) predictor for Valuation of the work is
+    \emph{1. Encouraging leadership} \(r = 0.45\)
+  \item
+    The second predictor for Valuation of the work is \emph{5. Incentive
+    value of the work} \(r = 0.22\)
+  \item
+    The third predictor for Valuation of the work is \emph{3. Know-how
+    rewarding} \(r = 0.09\)
+  \item
+    The fourth predictor for Valuation of the work is \emph{6. Clarity
+    of the work} \(r = 0.09\)
+  \end{enumerate}
+\item
+  Select Unstandardized estimates and complete the following sentences:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    When \emph{Encouraging leadership} goes up by 1, \emph{Valuation of
+    the work} goes up by 0.38.
+  \item
+    When \emph{Know-how rewarding} goes up by 1, \emph{Valuation of the
+    work} goes up 0.09.
+  \end{itemize}
+\end{itemize}
+
+\hypertarget{model-2}{%
+\subsubsection{Model 2}\label{model-2}}
+
+We modify the model 1 to account for an indirect effect from
+\emph{Know-how rewarding} (op\_rew3) via \emph{Incentive value of of the
+work} (tk\_inv5) to \emph{Valuation of the work} (ta\_val7).
+
+\[ta\_val7 = \beta_0 + \beta_1 kj\_enc1 + \beta_2 op\_rew3 + \beta_3ts\_cla + \beta_4 op\_rew3 * tk_inv5 + \varepsilon_{ta\_val7}\]
+
+By accounting for the mediation effect, we obtain the following result:
+
+\begin{verbatim}
+## lavaan 0.6-12 ended normally after 7 iterations
+## 
+##   Estimator                                         ML
+##   Optimization method                           NLMINB
+##   Number of model parameters                         7
+##   Number of equality constraints                     2
+## 
+##                                                   Used       Total
+##   Number of observations                           443         447
+## 
+## Model Test User Model:
+##                                                       
+##   Test statistic                                88.828
+##   Degrees of freedom                                 4
+##   P-value (Chi-square)                           0.000
+## 
+## Parameter Estimates:
+## 
+##   Standard errors                             Standard
+##   Information                                 Expected
+##   Information saturated (h1) model          Structured
+## 
+## Regressions:
+##                    Estimate  Std.Err  z-value  P(>|z|)   Std.lv  Std.all
+##   ta_val7 ~                                                             
+##     kj_enc1    (c)    0.186    0.012   15.498    0.000    0.186    0.223
+##     op_rew3    (c)    0.186    0.012   15.498    0.000    0.186    0.201
+##     ts_cla6    (c)    0.186    0.012   15.498    0.000    0.186    0.218
+##   tk_inv5 ~                                                             
+##     op_rew3    (a)    0.378    0.040    9.478    0.000    0.378    0.411
+##   ta_val7 ~                                                             
+##     tk_inv5    (b)    0.254    0.037    6.926    0.000    0.254    0.253
+## 
+## Variances:
+##                    Estimate  Std.Err  z-value  P(>|z|)   Std.lv  Std.all
+##    .ta_val7           0.380    0.026   14.883    0.000    0.380    0.518
+##    .tk_inv5           0.601    0.040   14.883    0.000    0.601    0.831
+## 
+## R-Square:
+##                    Estimate
+##     ta_val7           0.482
+##     tk_inv5           0.169
+## 
+## Defined Parameters:
+##                    Estimate  Std.Err  z-value  P(>|z|)   Std.lv  Std.all
+##     ab                0.096    0.017    5.592    0.000    0.096    0.104
+##     total             0.282    0.018   15.663    0.000    0.282    0.327
+\end{verbatim}
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.6\linewidth]{report_script_files/figure-latex/path_plot_med-1} 
+
+}
+
+\caption{Model path}\label{fig:path_plot_med}
+\end{figure}
+
+And we can extract the following conclusions:
+
+\begin{itemize}
+\tightlist
+\item
+  How much DV‟s variance the four IV‟s predict? Model 1 \(R^2 = 0.527\).
+  Compared to Model 2 with mediation 0.65 \%.
+\item
+  How does the indirect path affect the regression model? controlling
+  for the mediation effect have improved the effect of Clarity of the
+  work (ts\_cla6) and \emph{Know-how rewarding} (op\_rew3). On the
+  contrary have decreased the effect of \emph{Encouraging leadership}
+  (kj\_enc1). However, the new model seems to explain better the
+  \emph{Valuation of the work} (ta\_val7),a s per \(R2\) metric.
+\end{itemize}
+
+\end{document}

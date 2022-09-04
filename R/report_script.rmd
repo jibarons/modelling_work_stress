@@ -100,11 +100,13 @@ corrplot.mixed(
 
 ## Path analysis
 
-To perform the path analysis we make use of the 13 factors available in our data and we fit the following model:
+### Model 1
 
-```{r path_plot, out.width = "60%", fig.cap = "Model path", fig.align = 'center'}
-p_path
-```
+To perform the path analysis we make use of the 13 factors available in our data. The data consists of the thirteen growth-oriented atmosphere factors. The sample is the same as in data1, 447 staff members of Finnish polytechnic institute for higher education. The sample was collected in 2000.
+
+Over this data we are interested on knwoing the determinant for _Valuation of the work_. We fit the following model:
+
+$$ta\_val7 = \beta_0 + \beta_1 kj\_enc1 + \beta_2 op\_rew3 + \beta_3 tk\_inv5 + \beta_4ts\_cla + \varepsilon_{ta\_val7}$$
 
 where:
 
@@ -121,7 +123,7 @@ format_tbl(var_dict, "Labels for factor variables")
 
 ```
 
-Tghe summary of the model was the following:
+The summary of the model was the following:
 
 ```{r summary_fit}
 fit_summary
@@ -131,12 +133,11 @@ fit_summary
 ```{r calculate}
 r2 <- fit_pe[which(fit_pe$op == "r2"), "est"]
 
-fit_pe_reg <- dplyr::arrange(fit_pe[fit_pe$op == "~", ], dplyr::desc(est))
+fit_pe_reg <- dplyr::arrange(tidy_fit[tidy_fit$op == "~", ], dplyr::desc(est_std))
 
-
-r_1_var <- var_labs[names(var_labs) %in% fit_pe_reg[1, "rhs"]]
-
-
+```
+```{r path_plot, out.width = "60%", fig.cap = "Fitted model", fig.align = 'center'}
+p_path
 ```
 
 From the results of the model we obtain the following conclusions:
@@ -144,14 +145,76 @@ From the results of the model we obtain the following conclusions:
 * How much dependent variable variance the four independent variables predict? $R^2 = `r round(r2,3)`$ .
 
 * Order the IVs in the following rows (best predictor comes first):
-  1. The first (strongest) predictor for Valuation of the work is _`r var_labs[names(var_labs) %in% fit_pe_reg[1, "rhs"]]`_ $r = `r round(fit_pe_reg[1, "est"], 3)`$
-  2. The second predictor for Valuation of the work is _`r var_labs[names(var_labs) %in% fit_pe_reg[2, "rhs"]]`_ $r = `r round(fit_pe_reg[2, "est"], 3)`$
-  3. The third predictor for Valuation of the work is _`r var_labs[names(var_labs) %in% fit_pe_reg[3, "rhs"]]`_ $r = `r round(fit_pe_reg[3, "est"], 3)`$
-  4. The fourth predictor for Valuation of the work is _`r var_labs[names(var_labs) %in% fit_pe_reg[4, "rhs"]]`_ $r = `r round(fit_pe_reg[4, "est"], 3)`$
+  1. The first (strongest) predictor for Valuation of the work is _`r var_labs[names(var_labs) %in% fit_pe_reg[1, "rhs"]]`_ $r = `r fit_pe_reg[1, "est_std"]`$
+  2. The second predictor for Valuation of the work is _`r var_labs[names(var_labs) %in% fit_pe_reg[2, "rhs"]]`_ $r = `r fit_pe_reg[2, "est_std"]`$
+  3. The third predictor for Valuation of the work is _`r var_labs[names(var_labs) %in% fit_pe_reg[3, "rhs"]]`_ $r = `r fit_pe_reg[3, "est_std"]`$
+  4. The fourth predictor for Valuation of the work is _`r var_labs[names(var_labs) %in% fit_pe_reg[4, "rhs"]]`_ $r = `r fit_pe_reg[4, "est_std"]`$
 
 * Select Unstandardized estimates and complete the following sentences:
-  * When _Encouraging leadership_ goes up by 1, Valuation of the work goes up / down by ____.
-  * When _Know-how rewarding_ goes up by 1, Valuation of the work goes up / down by ____.
+  * When _Encouraging leadership_ goes up by 1, _Valuation of the work_ goes up by `r fit_pe_reg[fit_pe_reg$from == "kj_enc1", "est"]`.
+  * When _Know-how rewarding_ goes up by 1, _Valuation of the work_ goes up `r fit_pe_reg[fit_pe_reg$from == "op_rew3", "est"]`.
+
+
+### Model 2
+
+We modify the model 1 to account for an indirect effect from _Know-how rewarding_ (op_rew3) via _Incentive value of of the work_ (tk_inv5) to _Valuation of the work_ (ta_val7).
+
+$$ta\_val7 = \beta_0 + \beta_1 kj\_enc1 + \beta_2 op\_rew3 + \beta_3ts\_cla + \beta_4 op\_rew3 * tk_inv5 + \varepsilon_{ta\_val7}$$
+
+By accounting for the mediation effect, we obtain the following result:
+
+```{r summary_med}
+fit_summary_med 
+
+```
+```{r path_plot_med, out.width = "60%", fig.cap = "Fitted model with mediation", fig.align = 'center'}
+p_path_med
+```
+
+And we can extract the following conclusions:
+
+```{r calculate_med}
+r2_med <- fit_pe_med[which(fit_pe_med$op == "r2"), "est"]
+
+fit_pe_reg_med <- dplyr::arrange(tidy_fit[tidy_fit$op == "~", ], dplyr::desc(est_std))
+
+```
+
+
+* How much DV‟s variance the four IV‟s predict? Model 1 $R^2 = `r round(r2,3)`$. Compared to Model 2 with mediation `r round(sum(r2_med),3)` %.
+* How does the indirect path affect the regression model? controlling for the mediation effect have improved the effect of Clarity of the work (ts_cla6) and _Know-how rewarding_ (op_rew3). On the contrary have decreased the effect of _Encouraging leadership_ (kj_enc1). However, the new model seems to explain better the _Valuation of the work_ (ta_val7),a s per $R2$ metric.
+
+
+
+## Latent variable model
+
+The model examines how encouraging leadership and build-up of work requirements together affect on psychical stress of the work
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

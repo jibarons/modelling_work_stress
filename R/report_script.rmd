@@ -1,7 +1,7 @@
 ---
 title: "Structural Equation Modeling"
 author: "Julian Ibarguen"
-date: "25/08/2022"
+date: "12/09/2022"
 header-includes:
 - \usepackage{booktabs}
 - \usepackage{makecell}
@@ -24,7 +24,6 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
-
 format_tbl <- function(.data, caption = "Table") {
   
   align.c <- rep("c", ncol(.data) - 1)
@@ -37,14 +36,13 @@ format_tbl <- function(.data, caption = "Table") {
     kableExtra::kable_styling(latex_options = c("hold_position", "striped")) %>%
     kableExtra::row_spec(0, bold = TRUE) %>%
     kableExtra::column_spec(0, bold = TRUE)
-
 }
 
 ```
 
 ## Introduction
 
-We aim to fit a Structural Equation Model (SEM) following the exercise proposed by Petri Nokelainen from the Research Centre for Vocational Education, University of Tampere, Finland. Data and documentation for this exercise can be found [\textcolor{blue}{here}](https://www.scribd.com/document/222003310/Sem-Exercise-v2-5).
+We aim to fit a Structural Equation Model (SEM) following the exercise proposed by Petri Nokelainen from the Research Centre for Vocational Education, University of Tampere, Finland. Data and documentation for this exercise can be found [\textcolor{blue}{here}](https://www.scribd.com/document/222003310/Sem-Exercise-v2-5). The exercise was carried using R and the lavaan package. All the scripts for this exercise can be found [\textcolor{blue}{here}](https://github.com/jibarons/modelling_work_stress)
 
 We used the proposed data set with `r nrow(df)` rows and `r ncol(df)` columns. The respondents in both samples are staff members of Finnish polytechnic institute for higher education. The original measurement instrument (Growth-oriented Atmosphere Questionnaire, GOAQ) has 13 factors and 92-items (Ruohotie, 1996; Ruohotie, Nokelainen & Tirri, 2002), but for the purposes of this exercise Nokelainen selected 13 factors and 27 items, all consisting of a five–point Likert scale from 1 (totally disagree) to 5 (totally agree) was applied (Nokelainen, n.d.)
 
@@ -57,7 +55,7 @@ Although data is ordinal, thus non-normal in nature, we check for normality assu
 Given a normally distribute variable would have a skewness of 0 and kurtosis of 3. For this purpose we calculated a synthetic measure for skewness and kurtosis as the average between the skewness and excess kurtosis ($kurtosis - 3$). Under this synthetic measure, a perfect normal distribution would have a value of 0. For our purpose, we select those variables whose deviance from the normal distribution is lower than 0.4, according to the synthetic measure create. The selected variables were further confirmed with the histogram.
 
 
-Observing table 1 and figure 1, we assumed normality for the following variables: `r paste(norm_stats[norm_stats$avg_skew_kurt < 0.4, "variable"][[1]], collapse = ", ")`. The remaining variables were assumed non-normally distributed
+Observing Table 1 and Figure 1, we assumed normality for the following variables: `r paste(norm_stats[norm_stats$avg_skew_kurt < 0.4, "variable"][[1]], collapse = ", ")`. The remaining variables were assumed non-normally distributed
 
 
 ```{r norm_descr}
@@ -73,7 +71,7 @@ p_hist
 
 Based on the univariate analysis, we select three different variable combinations: 1) both are assumed normally distributed; 2) one is assumed normally distributed, but the other one no; 3) neither fo them is assumed normally distributed. 
 
-In figure 2, we can observe the linear relationship between the 3 different combination. When we assume normality in both variables, we observe linear relationship, which decreases for the second combination (one variable assumed normal and the other no), and the relationship disappear for the third combination
+In Figure 2, we can observe the linear relationship between the 3 different combination. When we assume normality in both variables, we observe linear relationship, which decreases for the second combination (one variable assumed normal and the other no), and the relationship disappear for the third combination
 
 ```{r bivariates, fig.show = "hold", fig.ncol = 2, fig.align = 'center', out.width = "50%", fig.cap = "Bivariate distributions", fig.subcap = c("Two variables assumed normally distributed", "One variable assumed normally distributed", "No variable assumed normally distributed")}
 p_norm2
@@ -84,9 +82,9 @@ p_norm0
 
 ### Correlation matrix
 
-We observe now the correlation matrix between all `r ncol(df)` variables. For SEM and other factorial type of analysis, the correlation coefficient should be between $\pm 0.3$ and $\pm 0.8$. Too low correlations indicate weak inter-item dependency, too high correlations might indicate multicollinearity (Nokelainen, n.d.). 
+We observe now the correlation matrix between all `r ncol(df)` variables (Figure 3). For SEM and other factorial type of analysis, the correlation coefficient should be between $\pm 0.3$ and $\pm 0.8$. Too low correlations indicate weak inter-item dependency, too high correlations might indicate multicollinearity (Nokelainen, n.d.). 
 
-The highest correlation coefficient ($r$) in absolute terms was betwee `r max_r_vars` with $r = $`r max_r` and $R^2$ = `r `max_r2`. The lowest correlation coefficient ($r$) was between `r min_r_vars` with $r = $`r min_r` and $R^2$ = `r `min_r2`. Therefore, we cna conlcude that our variables are suitable for a SEM model
+The highest correlation coefficient ($r$) in absolute terms was betwee `r max_r_vars` with $r = $`r max_r` and $R^2 =$ `r `max_r2`. The lowest correlation coefficient ($r$) was between `r min_r_vars` with $r = $`r min_r` and $R^2 =$ `r `min_r2`. Therefore, we cna conlcude that our variables are suitable for a SEM model
 
 
 ```{r cor_plot, fig.dim = c(15, 15), fig.cap = "Correlation matrix"}
@@ -98,17 +96,17 @@ corrplot.mixed(
 ```
 
 
-## Path analysis
+## Path Analysis
 
 ### Model 1
 
-To perform the path analysis we make use of the 13 factors available in our data. The data consists of the thirteen growth-oriented atmosphere factors. The sample is the same as in data1, 447 staff members of Finnish polytechnic institute for higher education. The sample was collected in 2000.
+To perform the path analysis we make use of the 13 factors available in our data. The data consists of the thirteen growth-oriented atmosphere factors. The sample is the same as in data1, 447 staff members of Finnish polytechnic institute for higher education. The sample was collected in 2000. Missing values were estimated with maximum likelihood.
 
-Over this data we are interested on knwoing the determinant for _Valuation of the work_. We fit the following model:
+The model that we build here examines four predictors (IV's) of valuation of the work (DV). The predictors are: Encouraging leadership, Know-how rewarding, Incentive value of the job, Clarity of the job.
 
 $$ta\_val7 = \beta_0 + \beta_1 kj\_enc1 + \beta_2 op\_rew3 + \beta_3 tk\_inv5 + \beta_4ts\_cla + \varepsilon_{ta\_val7}$$
 
-where:
+where (Table2):
 
 ```{r var_names}
 var_dict <- as_tibble(as.list(var_labs)) %>% 
@@ -123,12 +121,13 @@ format_tbl(var_dict, "Labels for factor variables")
 
 ```
 
-The summary of the model was the following:
+The following model was fitted (Figure 4):
 
-```{r summary_fit}
-fit_summary
-
+```{r path_plot, out.width = "70%", fig.cap = "Measurment model", fig.align = 'center'}
+p_path
 ```
+
+From the results of the model we obtain the following conclusions:
 
 ```{r calculate}
 r2 <- fit_pe[which(fit_pe$op == "r2"), "est"]
@@ -136,11 +135,6 @@ r2 <- fit_pe[which(fit_pe$op == "r2"), "est"]
 fit_pe_reg <- dplyr::arrange(tidy_fit[tidy_fit$op == "~", ], dplyr::desc(est_std))
 
 ```
-```{r path_plot, out.width = "60%", fig.cap = "Fitted model", fig.align = 'center'}
-p_path
-```
-
-From the results of the model we obtain the following conclusions:
 
 * How much dependent variable variance the four independent variables predict? $R^2 = `r round(r2,3)`$ .
 
@@ -155,19 +149,15 @@ From the results of the model we obtain the following conclusions:
   * When _Know-how rewarding_ goes up by 1, _Valuation of the work_ goes up `r fit_pe_reg[fit_pe_reg$from == "op_rew3", "est"]`.
 
 
-### Model 2
+### Model 2: adding mediation effect
 
 We modify the model 1 to account for an indirect effect from _Know-how rewarding_ (op_rew3) via _Incentive value of of the work_ (tk_inv5) to _Valuation of the work_ (ta_val7).
 
 $$ta\_val7 = \beta_0 + \beta_1 kj\_enc1 + \beta_2 op\_rew3 + \beta_3ts\_cla + \beta_4 op\_rew3 * tk_inv5 + \varepsilon_{ta\_val7}$$
 
-By accounting for the mediation effect, we obtain the following result:
+By accounting for the mediation effect, we obtain the following result (Figure 5):
 
-```{r summary_med}
-fit_summary_med 
-
-```
-```{r path_plot_med, out.width = "60%", fig.cap = "Fitted model with mediation", fig.align = 'center'}
+```{r path_plot_med, out.width = "70%", fig.cap = "Fitted model with mediation", fig.align = 'center'}
 p_path_med
 ```
 
@@ -181,33 +171,95 @@ fit_pe_reg_med <- dplyr::arrange(tidy_fit[tidy_fit$op == "~", ], dplyr::desc(est
 ```
 
 
-* How much DV‟s variance the four IV‟s predict? Model 1 $R^2 = `r round(r2,3)`$. Compared to Model 2 with mediation `r round(sum(r2_med),3)` %.
+* How much DV's variance the four IV's predict? Model 1 $R^2 = `r round(r2,3)`$. Compared to Model 2 with mediation `r round(sum(r2_med),3)` %.
 * How does the indirect path affect the regression model? controlling for the mediation effect have improved the effect of Clarity of the work (ts_cla6) and _Know-how rewarding_ (op_rew3). On the contrary have decreased the effect of _Encouraging leadership_ (kj_enc1). However, the new model seems to explain better the _Valuation of the work_ (ta_val7),a s per $R2$ metric.
 
 
 
-## Latent variable model
+## Latent model
 
-The model examines how encouraging leadership and build-up of work requirements together affect on psychical stress of the work
+### Model 1
 
+The model examines how encouraging leadership and build-up of work requirements together affect on psychical stress of the work. The data file (n = 447) is collected in 2000 from Finnish polytechnic for higher education staff and includes their answers to 22 growth-oriented atmosphere questions. Missing values were estimated with maximum likelihood.
 
+While fitting the model (Figure 6), the two latent variables were allowed to correlate in the model. This decision was based on a theoretical assumption. We created error variables for each observed variable setting regression weight of one. 
 
-
-
-
-
-
+Furthermore, we set at least one arrow departing from each variable in the model with a regression weight of 1. This procedure helps the model to become identifiable and indicates which one of the observed variables is the ”number one operationalization” of the latent variable. 
 
 
+```{r path_lat, fig.show = "hold", out.width = "80%", fig.cap = "Path diagram for model 1", fig.subcap = c("Unstandardized", "Standardized"), fig.align = 'center', fig.sep = '\\par'}
+p_path_lat_est
+p_path_lat_std
+
+```
+
+We extracted the following conclusions form the model:
+
+```{r params_model1}
+params <- tidy_fit_lat_std %>%
+dplyr::filter(to == "tr_psy11", from != "tr_psy11", from != "epsw") %>%
+dplyr::arrange(dplyr::desc(est_std))
+
+r2 <- fit_pe_lat %>%
+dplyr::filter(op == "r2", lhs == "tr_psy11") %>%
+dplyr::pull(est)
+
+```
+
+Consider, on the basis of the standardized estimates of the model, how the two IV's explain the
+DV, _psychic stress of the work_:
+
+* Best predictor for _Psychic stress of the work_ is `r var_dict[var_dict$variable_name == params[1,1][[1]], "variable_label"][[1]]` $r =$ `r params[1,"est_std"]` 
+* Second best predictor for _Psychic stress of the work_ is `r var_dict[var_dict$variable_name == params[2,1][[1]], "variable_label"][[1]]` $r =$ `r params[2,"est_std"]`
+
+How well the two IV's predict the DV? $R^2 =$ `r round(r2, 2)` 
 
 
+### Model 2: adding rewarding of know-how
+
+We added one predictor to the model, namely _Rewarding of know-how_. At the same time we remove one variable from _Encouraging leadership_, mainly becasue the excersise was proposed to be completed with AMOS, which in its student version limits the numebr of variabels that can be used. 
+
+All in all, we obtain the following path diagram for the new model (Figure 7):
+
+```{r path_lat2, fig.show = "hold", out.width = "80%", fig.cap = "Path diagram for model 2", fig.subcap = c("Unstandardized", "Standardized"), fig.align = 'center', fig.sep = '\\par'}
+p_path_lat_est2
+p_path_lat_std2
+
+```
+
+```{r params_model2}
+params_2 <- tidy_fit_lat_std2 %>%
+dplyr::filter(to == "tr_psy11", from != "tr_psy11", from != "epsw") %>%
+dplyr::arrange(dplyr::desc(est_std))
+
+r2_2 <- fit_pe_lat2 %>%
+dplyr::filter(op == "r2", lhs == "tr_psy11") %>%
+dplyr::pull(est)
+```
+
+How do the three IV's differ as predictors for the DV? 
+
+* The first (strongest) predictor for _Psychic stress_ of the work is `r var_dict[var_dict$variable_name == params_2[1,1][[1]], "variable_label"][[1]]` $r =$ `r params_2[1,"est_std"]`
+* The second predictor for _Psychic stress of the work_ is `r var_dict[var_dict$variable_name == params_2[2,1][[1]], "variable_label"][[1]]` $r =$ `r params_2[2,"est_std"]` 
+* The third predictor for _Psychic stress of the work_ is `r var_dict[var_dict$variable_name == params_2[3,1][[1]], "variable_label"][[1]]` $r =$ `r params_2[3,"est_std"]` 
+
+How well the three IV's predict the DV? $R^2 =$ `r round(r2_2, 2)`
+
+* When _Encouraging leadership_ goes up by 1, _Psychic stress of the work_ goes down by `r params_2[params_2$from == "kj_enc1", "est"]`. 
+* When _Build-up of work requirements_ goes up by 1, _Psychic stress of the work_ goes up `r params_2[params_2$from == "tv_bui12", "est"]`.
+* When _Rewarding of know-how_ goes up by 1, _Psychic stress of the work_ goes up `r params_2[params_2$from == "op_rew3", "est"]`.
 
 
+## Model comparision and Goodness of Fit
 
+Once we have the two models, we proceed to compare them to see which one offer a better goodness of fit to the data. Table 3 provides the Goodness of Fit measures to compare between model 1 and model 2. 
 
+As we can observe, model 1 perform better in all fitness measures, with a lower $X^2$, lower RMSEA, and higher NFI, CFI and TLI. Although added complexity to the model tend to bring the fitness measures down, the difference is significant as to attribute only to a greater complexity of the second model.
 
+```{r gof_tables}
+format_tbl(fits_gof)
 
-
+```
 
 
 

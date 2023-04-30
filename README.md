@@ -1,4 +1,4 @@
-# Modelling Work Strees with Structural Equations (SEM)
+# Modelling Work Stress with Structural Equations (SEM)
 
 We aim to fit a Structural Equation Model (SEM) following the exercise proposed by Petri Nokelainen from the Research Centre for Vocational Education, University of Tampere, Finland. The exercise was carried using R and the lavaan package. Documentation for this exercise can be found [here](https://www.scribd.com/document/222003310/Sem-Exercise-v2-5). 
 
